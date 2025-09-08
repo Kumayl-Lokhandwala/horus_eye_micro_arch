@@ -1,0 +1,44 @@
+# --- Env files: ignore actual envs, but keep examples ---
+# ignore all files named .env anywhere
+.env
+# ignore .env.* (e.g. .env.local, .env.production)
+.env.*
+# but keep examples or templates
+!.env.example
+!.env.template
+
+# --- Node / Next ---
+node_modules/
+.next/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+package-lock.json
+
+# --- Python / virtualenv ---
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.sqlite3
+pip-wheel-metadata/
+*.egg-info/
+
+# --- Build / test / coverage ---
+coverage/
+coverage.xml
+*.log
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# --- Misc ---
+__pycache__/

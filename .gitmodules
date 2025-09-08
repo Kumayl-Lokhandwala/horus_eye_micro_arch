@@ -1,0 +1,6 @@
+[submodule "web"]
+	path = web
+	url = https://github.com/Aman-Yadav13/horuseye-web.git
+[submodule "fastapi_gateway"]
+	path = fastapi_gateway
+	url = https://github.com/Aman-Yadav13/horuseye-fastapi-gateway
