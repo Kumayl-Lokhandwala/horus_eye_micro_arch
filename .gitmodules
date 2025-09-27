@@ -4,3 +4,6 @@
 [submodule "fastapi_gateway"]
 	path = fastapi_gateway
 	url = https://github.com/Aman-Yadav13/horuseye-fastapi-gateway
+[submodule "recon"]
+	path = recon
+	url = https://github.com/Aman-Yadav13/horuseye-recon.git
