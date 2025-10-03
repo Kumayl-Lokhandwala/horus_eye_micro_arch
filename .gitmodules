@@ -7,3 +7,6 @@
 [submodule "recon"]
 	path = recon
 	url = https://github.com/Aman-Yadav13/horuseye-recon.git
+[submodule "vulnr"]
+	path = vulnr
+	url = https://github.com/Aman-Yadav13/horuseye_vulnr.git
