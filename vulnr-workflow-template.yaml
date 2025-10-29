@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: vuln-workflow-template
+  namespace: argo
+spec:
+  entrypoint: vuln-task
+
+  # Define the TOP-LEVEL inputs this template accepts
+  arguments:
+    parameters:
+    - name: scan-id
+      description: The unique ID for this scan (e.g., 'scan-abc123')
+    - name: target
+      description: The IP or domain target (e.g., 'scanme.nmap.org')
+
+  templates:
+  - name: vuln-task
+    # --- FIX: Remove the inputs block from this template ---
+    # inputs:
+    #   parameters:
+    #   - name: scan-id
+    #   - name: target
+    container:
+      image: horuseye/vuln-service
+      command: [ "python3" ]
+      args: [ "argo_run_scan.py" ]
+      imagePullPolicy: Never
+
+      env:
+        # --- FIX: Read from workflow.parameters instead of inputs.parameters ---
+        - name: SCAN_ID
+          value: "{{workflow.parameters.scan-id}}"
+        - name: TARGET
+          value: "{{workflow.parameters.target}}"
+
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/gcp/key.json
+        - name: GCS_BUCKET_NAME
+          value: "hs_v1_data_bucket" # Make sure this matches your bucket
+        - name: GCP_PROJECT_ID
+          value: "horuseye-471505" # Make sure this matches your project ID
+
+      volumeMounts:
+      - name: gcp-key-volume
+        mountPath: /var/secrets/gcp
+
+    volumes:
+    - name: gcp-key-volume
+      secret:
+        secretName: gcp-sa-key 
+        items:
+          - key: key.json
+            path: key.json
+

@@ -1,0 +1,29 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  # Rename the role to reflect its new purpose
+  name: argo-events-workflow-submitter
+  namespace: argo # Role is in the 'argo' namespace
+rules:
+- apiGroups: ["argoproj.io"]
+  resources: ["workflowtemplates"] # Keep permission to read templates
+  verbs: ["get", "list"]
+- apiGroups: ["argoproj.io"]
+  resources: ["workflows"] # Add permission for Workflows
+  verbs: ["create", "list", "get"] # Allow creating new Workflows
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argo-events-submit-wf-binding # Update binding name
+  namespace: argo # Binding is in the 'argo' namespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  # Link to the updated Role name
+  name: argo-events-workflow-submitter
+subjects:
+- kind: ServiceAccount
+  name: default # The service account running the Sensor pod
+  namespace: argo-events # The namespace of the Sensor's service account
+

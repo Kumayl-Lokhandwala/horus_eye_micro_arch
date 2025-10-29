@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: recon-workflow-template  
+  namespace: argo
+spec:
+  entrypoint: recon-task
+
+  arguments:
+    parameters:
+    - name: scan-id
+      description: The unique ID for this scan (e.g., 'scan-abc123')
+    - name: target
+      description: The IP or domain to scan (e.g., 'scanme.nmap.org')
+    - name: recon-tools-payload-json  
+      description: A JSON string of the RECON tools and parameters
+    - name: vulnr-tools-payload-json  
+      description: A JSON string of the VULNERABILITY tools and parameters
+
+  templates:
+  - name: recon-task
+    inputs:
+      parameters:
+      - name: scan-id
+      - name: target
+      - name: recon-tools-payload-json
+      - name: vulnr-tools-payload-json 
+    container:
+      image: horuseye/recon-service 
+      command: [ "python3" ]
+      args: [ "argo_run_scan.py" ]
+      imagePullPolicy: Never
+
+      env:
+        - name: SCAN_ID
+          value: "{{inputs.parameters.scan-id}}"
+        - name: TARGET
+          value: "{{inputs.parameters.target}}"
+        - name: RECON_TOOLS_PAYLOAD_JSON 
+          value: "{{inputs.parameters.recon-tools-payload-json}}"
+        - name: VULNR_TOOLS_PAYLOAD_JSON
+          value: "{{inputs.parameters.vulnr-tools-payload-json}}"
+
+
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/gcp/key.json
+        - name: GCS_BUCKET_NAME
+          value: "hs_v1_data_bucket"
+
+        - name: GCP_PROJECT_ID
+          value: "horuseye-471505"
+        - name: PUB_SUB_TOPIC
+          value: "recon-complete-pubsub-topic" 
+
+      volumeMounts:
+      - name: gcp-key-volume
+        mountPath: /var/secrets/gcp
+        
+    volumes:
+    - name: gcp-key-volume
+      secret:
+        secretName: gcp-sa-key
+        items:
+          - key: key.json
+            path: key.json

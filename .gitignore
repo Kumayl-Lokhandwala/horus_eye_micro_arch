@@ -42,3 +42,6 @@ coverage.xml
 
 # --- Misc ---
 __pycache__/
+
+gcloud-credentials.json
+config/gcloud-credentials.json

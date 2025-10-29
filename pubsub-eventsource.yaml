@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: pubsub-listener
+  namespace: argo-events # IMPORTANT: Must be in the argo-events namespace
+spec:
+  pubSub:
+    # This name will be referenced by the Sensor
+    reconComplete:
+      # --- Configuration for your GCP Project and Topic ---
+      projectID: "horuseye-471505"
+      topic: "recon-complete-pubsub-topic"
+      # Tells EventSource how to find the GCP Credentials Secret
+      credentialSecret:
+        name: gcp-sa-key # The secret we created in argo-events namespace
+        key: key.json   # The key within that secret
+      # --- FIX: Update subscriptionID to match the actual one ---
+      subscriptionID: "recon-complete-pubsub-topic-sub" # Name of the subscription Argo Events should use
+      # Optional: Configures how the message body is handled
+      jsonBody: true # Tells Argo Events to expect JSON in the message body
+

@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: vuln-workflow-trigger
+  namespace: argo-events
+spec:
+  dependencies:
+    - name: recon-dep
+      eventSourceName: pubsub-listener
+      eventName: reconComplete
+
+  triggers:
+    - template:
+        name: trigger-vuln-workflow
+        argoWorkflow:
+          operation: submit
+          source:
+            # This defines the Workflow resource the Sensor will create
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: vuln-scan-
+                namespace: argo
+              spec:
+                workflowTemplateRef:
+                  name: vuln-workflow-template
+                # Define the arguments the Workflow expects
+                arguments:
+                  parameters:
+                    # These are placeholders that will be filled by the 'parameters' below
+                    - name: scan-id
+                    - name: target
+          # This section tells the Sensor HOW to fill the placeholders above
+          parameters:
+            - src:
+                dependencyName: recon-dep
+                # --- FIX: Point to the 'body' within the CloudEvent data ---
+                dataKey: body.scan_id
+              # dest defines WHERE in the 'source.resource' above to put the value
+              dest: spec.arguments.parameters.0.value # Put it in the 'value' of the first parameter (scan-id)
+
+            - src:
+                dependencyName: recon-dep
+                # --- FIX: Point to the 'body' within the CloudEvent data ---
+                dataKey: body.target
+              dest: spec.arguments.parameters.1.value # Put it in the 'value' of the second parameter (target)
+
