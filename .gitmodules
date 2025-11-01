@@ -10,3 +10,6 @@
 [submodule "vulnr"]
 	path = vulnr
 	url = https://github.com/Aman-Yadav13/horuseye_vulnr.git
+[submodule "reporting"]
+	path = reporting
+	url = https://github.com/Aman-Yadav13/horuseye-report-generation.git
