@@ -28,7 +28,6 @@ spec:
       imagePullPolicy: Never
 
       env:
-        # --- FIX: Read from workflow.parameters instead of inputs.parameters ---
         - name: SCAN_ID
           value: "{{workflow.parameters.scan-id}}"
         - name: TARGET
@@ -40,6 +39,8 @@ spec:
           value: "hs_v1_data_bucket" # Make sure this matches your bucket
         - name: GCP_PROJECT_ID
           value: "horuseye-471505" # Make sure this matches your project ID
+        - name: VULN_PUB_SUB_TOPIC
+          value: "vuln-complete-pubsub-topic"
 
       volumeMounts:
       - name: gcp-key-volume
@@ -49,7 +50,7 @@ spec:
     - name: gcp-key-volume
       secret:
         secretName: gcp-sa-key 
-        items:
+      items:
           - key: key.json
             path: key.json
 

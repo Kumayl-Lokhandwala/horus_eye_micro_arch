@@ -1,0 +1,21 @@
+services:
+  report_generator:
+    build: .
+
+    image: horuseye/report-generation-service
+
+    command: gunicorn -w 4 -b 0.0.0.0:8002 app:app
+
+    ports:
+      - "8002:8002"
+
+    volumes:
+      - ./gcloud-credentials.json:/app/gcloud-credentials.json:ro
+
+      - ./outputs:/app/outputs
+
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcloud-credentials.json
+
+    env_file:
+      - .env

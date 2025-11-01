@@ -1,0 +1,6 @@
+flask
+google-cloud-storage
+google-cloud-aiplatform
+reportlab
+python-dotenv
+gunicorn
