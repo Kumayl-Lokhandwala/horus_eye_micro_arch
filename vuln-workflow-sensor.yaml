@@ -10,12 +10,12 @@ spec:
       eventName: reconComplete
 
   triggers:
+    # --- TRIGGER 1: START THE VULNERABILITY SCAN ---
     - template:
         name: trigger-vuln-workflow
         argoWorkflow:
           operation: submit
           source:
-            # This defines the Workflow resource the Sensor will create
             resource:
               apiVersion: argoproj.io/v1alpha1
               kind: Workflow
@@ -25,24 +25,45 @@ spec:
               spec:
                 workflowTemplateRef:
                   name: vuln-workflow-template
-                # Define the arguments the Workflow expects
                 arguments:
                   parameters:
-                    # These are placeholders that will be filled by the 'parameters' below
                     - name: scan-id
                     - name: target
-          # This section tells the Sensor HOW to fill the placeholders above
           parameters:
             - src:
                 dependencyName: recon-dep
-                # --- FIX: Point to the 'body' within the CloudEvent data ---
                 dataKey: body.scan_id
-              # dest defines WHERE in the 'source.resource' above to put the value
-              dest: spec.arguments.parameters.0.value # Put it in the 'value' of the first parameter (scan-id)
-
+              dest: spec.arguments.parameters.0.value
             - src:
                 dependencyName: recon-dep
-                # --- FIX: Point to the 'body' within the CloudEvent data ---
                 dataKey: body.target
-              dest: spec.arguments.parameters.1.value # Put it in the 'value' of the second parameter (target)
+              dest: spec.arguments.parameters.1.value
 
+    # --- TRIGGER 2: START THE RECON REPORT ---
+    - template:
+        name: trigger-recon-report
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: llm-recon-report-
+                namespace: argo
+              spec:
+                workflowTemplateRef:
+                  name: llm-workflow-template
+                arguments:
+                  parameters:
+                    - name: scan-id
+                    - name: report-type
+          parameters:
+            - src:
+                dependencyName: recon-dep
+                dataKey: body.scan_id
+              dest: spec.arguments.parameters.0.value
+            - src:
+                dependencyName: recon-dep # <-- FIX: Added missing dependencyName
+                dataTemplate: '"recon"'
+              dest: spec.arguments.parameters.1.value

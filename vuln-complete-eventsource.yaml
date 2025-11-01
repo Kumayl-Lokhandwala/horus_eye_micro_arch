@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: vuln-complete-listener
+  namespace: argo-events
+spec:
+  pubSub:
+    vulnComplete: 
+      projectID: "horuseye-471505"
+      topic: "vuln-complete-pubsub-topic" 
+      subscriptionID: "vuln-complete-pubsub-topic-sub" 
+      credentialSecret:
+        name: gcp-sa-key
+        key: key.json
+      jsonBody: true

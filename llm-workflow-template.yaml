@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: llm-workflow-template # The name of our blueprint
+  namespace: argo # Must be in the argo namespace
+spec:
+  entrypoint: report-task
+
+  # Define the TOP-LEVEL inputs this template accepts
+  arguments:
+    parameters:
+    - name: scan-id
+      description: The unique ID for this scan (e.g., 'scan-abc123')
+    - name: report-type
+      description: The type of report to generate ('recon' or 'vulnr')
+
+  templates:
+  - name: report-task
+    container:
+      image: horuseye/report-generation-service # Your pre-loaded image
+      command: [ "python3" ]
+      args: [ "argo_run_report.py" ]
+      imagePullPolicy: Never # Force use of local image
+
+      env:
+        # --- Read from workflow parameters ---
+        - name: SCAN_ID
+          value: "{{workflow.parameters.scan-id}}"
+        - name: REPORT_TYPE
+          value: "{{workflow.parameters.report-type}}"
+
+        # --- Pass secrets and config ---
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/gcp/key.json
+        - name: GCP_PROJECT_ID
+          value: "horuseye-471505"
+        
+        - name: GCP_LOCATION
+          value: "us-central1" 
+          
+        - name: DEFAULT_INPUT_BUCKET
+          value: "hs_v1_data_bucket"
+        - name: DEFAULT_OUTPUT_BUCKET
+          value: "hs_v1_data_bucket"
+        - name: GCS_INPUT_BUCKET
+          value: "hs_v1_data_bucket"
+        - name: GCS_OUTPUT_BUCKET
+          value: "hs_v1_data_bucket"
+          
+      volumeMounts:
+      - name: gcp-key-volume
+        mountPath: /var/secrets/gcp
+    
+    volumes:
+    - name: gcp-key-volume
+      secret:
+        secretName: gcp-sa-key
+        items:
+          - key: key.json
+            path: key.json

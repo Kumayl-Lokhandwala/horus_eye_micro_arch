@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: llm-vuln-report-trigger
+  namespace: argo-events
+spec:
+  dependencies:
+    - name: vuln-dep
+      eventSourceName: vuln-complete-listener
+      eventName: vulnComplete
+
+  triggers:
+    - template:
+        name: trigger-vuln-report
+        argoWorkflow:
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: llm-vuln-report-
+                namespace: argo
+              spec:
+                workflowTemplateRef:
+                  name: llm-workflow-template
+                arguments:
+                  parameters:
+                    - name: scan-id
+                    - name: report-type
+          parameters:
+            - src:
+                dependencyName: vuln-dep
+                dataKey: body.scan_id
+              dest: spec.arguments.parameters.0.value
+            - src:
+                dependencyName: vuln-dep # <-- FIX: Added missing dependencyName
+                dataTemplate: '"vulnr"'
+              dest: spec.arguments.parameters.1.value
